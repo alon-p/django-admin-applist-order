@@ -30,3 +30,7 @@ DJANGO_SETTINGS_MODULE = "tests.settings"
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[project.urls]
+Homepage = "https://github.com/alon-p/django-admin-applist-order"
+Bug = "https://github.com/alon-p/django-admin-applist-order/issues"
+
