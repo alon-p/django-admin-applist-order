@@ -1,5 +1,7 @@
 # django-admin-applist-order
 
+> A simple Django middleware to reorder the admin app list and models from a single dict in `settings.py`.
+
 Order the Django admin **app list** — the apps shown on the admin index, and
 the models within each app — from a single dict in your `settings.py`.
 
