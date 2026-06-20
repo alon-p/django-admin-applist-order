@@ -1,13 +1,12 @@
 [project]
 name = "django-admin-applist-order"
-version = "0.1.0"
+version = "0.1.1a0"
 description = ""
 authors = [
     { name = "Alon Palgy" }
 ]
 readme = "README.md"
 classifiers = [
-    "Development Status :: 1 - Beta",
     "Environment :: Web Environment",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
