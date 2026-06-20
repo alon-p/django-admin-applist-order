@@ -1,13 +1,15 @@
 from django.conf import settings
 
 from .reorder import reorder_app_list
+import logging
 
 # Context keys Django populates with the app list: the index page uses
 # ``app_list`` and the nav sidebar (each_context) uses ``available_apps``.
 _APP_LIST_KEYS = ("app_list", "available_apps")
 
-import logging
+
 logger = logging.getLogger(__name__)
+
 
 class AppListOrderMiddleware:
     """Reorder the admin app list according to ``settings.ADMIN_APPS_DISPLAY_ORDER``.
@@ -32,6 +34,7 @@ class AppListOrderMiddleware:
             return response
 
         context = getattr(response, "context_data", None)
+
         if not context:
             return response
 
