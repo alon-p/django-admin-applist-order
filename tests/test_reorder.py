@@ -11,7 +11,7 @@ def make_app(app_label, name, *model_names):
     }
 
 
-def model_names(app):
+def model_object_names(app):
     return [m["object_name"] for m in app["models"]]
 
 
@@ -28,7 +28,7 @@ def assert_app_order(apps, order, expected):
 def assert_model_order(models, order, expected):
     app = make_app("blog", "Blog", *models)
     result = reorder_app_list([app], {"blog": order})
-    assert model_names(result[0]) == expected
+    assert model_object_names(result[0]) == expected
 
 
 def test_empty_list_returns_empty():
@@ -101,6 +101,6 @@ def test_missing_model_in_order_is_skipped(caplog):
 
     result = reorder_app_list([app], {"blog": ["Ghost", "Post"]})
 
-    assert model_names(result[0]) == ["Post", "Author"]
+    assert model_object_names(result[0]) == ["Post", "Author"]
     assert [r.levelno for r in caplog.records] == [logging.WARNING]
     assert "ghost" in caplog.records[0].getMessage()
