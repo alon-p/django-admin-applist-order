@@ -1,10 +1,11 @@
 [project]
 name = "django-admin-applist-order"
-version = "0.5.0"
-description = ""
+version = "0.5.1b"
+description = "A simple Django middleware to reorder the admin app list and models from a single dict in"
 authors = [
     { name = "Alon Palgy" }
 ]
+license = "Apache-2.0"
 readme = "README.md"
 classifiers = [
     "Framework :: Django",
