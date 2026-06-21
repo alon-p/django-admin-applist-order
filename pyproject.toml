@@ -1,6 +1,6 @@
 [project]
 name = "django-admin-applist-order"
-version = "0.5.1b"
+version = "0.6.0"
 description = "A simple Django middleware to reorder the admin app list and models from a single dict in"
 authors = [
     { name = "Alon Palgy" }
