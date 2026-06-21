@@ -1,5 +1,6 @@
-import logging
+import pytest
 
+from django_admin_applist_order.exceptions import MalformedDisplayOrderException
 from django_admin_applist_order.reorder import reorder_app_list
 
 
@@ -95,12 +96,13 @@ def test_model_name_matching_is_case_insensitive():
     )
 
 
-def test_missing_model_in_order_is_skipped(caplog):
-    caplog.set_level(logging.WARNING)
+def test_unknown_model_in_order_raises():
     app = make_app("blog", "Blog", "Post", "Author")
 
-    result = reorder_app_list([app], {"blog": ["Ghost", "Post"]})
+    with pytest.raises(MalformedDisplayOrderException) as exc_info:
+        reorder_app_list([app], {"blog": ["Ghost", "Post"]})
 
-    assert model_object_names(result[0]) == ["Post", "Author"]
-    assert [r.levelno for r in caplog.records] == [logging.WARNING]
-    assert "ghost" in caplog.records[0].getMessage()
+    assert "blog" in str(exc_info.value)
+    assert "ghost" in str(exc_info.value).lower()
+    assert "Post" in str(exc_info.value)
+    assert "Author" in str(exc_info.value)

@@ -5,9 +5,7 @@ for the admin index and nav sidebar. Each app dict has ``app_label``, ``name``
 and ``models``; each model dict has ``object_name`` and ``name``.
 """
 
-import logging
-
-logger = logging.getLogger(__name__)
+from .exceptions import MalformedDisplayOrderException
 
 
 def reorder_app_list(app_list, apps_order):
@@ -36,7 +34,10 @@ def reorder_app_list(app_list, apps_order):
     ordered += [app_dict[label] for label in unlisted_labels]
 
     for app in ordered:
-        _order_models(app, apps_order.get(app["app_label"], []))
+        model_order = apps_order.get(app["app_label"], [])
+        if not isinstance(model_order, list):
+            raise MalformedDisplayOrderException.for_app(app["app_label"], model_order)
+        _order_models(app, model_order)
 
     return ordered
 
@@ -50,9 +51,10 @@ def _order_models(app, model_order):
     for name in wanted:
         model = model_by_name.get(name)
         if model is None:
-            logger.warning("model %r not found in app %r, skipping", name, app["app_label"])
-        else:
-            listed.append(model)
+            raise MalformedDisplayOrderException.for_unknown_model(
+                app["app_label"], name, [m["object_name"] for m in app["models"]]
+            )
+        listed.append(model)
     unlisted = sorted(
         (
             model
