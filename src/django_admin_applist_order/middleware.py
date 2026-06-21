@@ -1,5 +1,6 @@
 from django.conf import settings
 
+from .exceptions import MalformedDisplayOrderException
 from .reorder import reorder_app_list
 import logging
 
@@ -32,6 +33,9 @@ class AppListOrderMiddleware:
         if not apps_order:
             logger.debug("ADMIN_APPS_DISPLAY_ORDER not found in settings.py, skipping")
             return response
+
+        if not isinstance(apps_order, dict):
+            raise MalformedDisplayOrderException.for_setting(apps_order)
 
         context = getattr(response, "context_data", None)
 
