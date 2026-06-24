@@ -129,7 +129,7 @@ listed.append(model)
 ## Step 3 — Run the tests (green)  [ STATUS: TODO ]
 
 ```bash
-uv run python -m pytest tests/test_reorder.py -v
+poetry run python -m pytest tests/test_reorder.py -v
 ```
 
 All tests should pass, including the new ones. The old `test_unknown_model_in_order_raises`
@@ -140,7 +140,7 @@ test must be gone (it tested the removed behavior).
 ## Step 4 — Verify nothing else broke  [ STATUS: TODO ]
 
 ```bash
-uv run python -m pytest -v
+poetry run python -m pytest -v
 ```
 
 Full suite green. The `MalformedDisplayOrderException.for_unknown_model` classmethod can stay
