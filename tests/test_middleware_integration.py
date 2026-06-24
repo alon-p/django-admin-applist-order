@@ -118,6 +118,26 @@ def test_malformed_setting_model_list_is_string(admin_client, settings):
     assert "auth" in str(exc_info.value)
 
 
+def test_unknown_model_in_setting_is_skipped_and_logs(admin_client, settings, caplog):
+    """A model in the config that doesn't exist for this user is silently skipped,
+    the response succeeds, and a DEBUG log names the missing model and app."""
+    import logging
+
+    settings.ADMIN_APPS_DISPLAY_ORDER = {
+        "auth": ["GhostModel", "User", "Group"],
+    }
+    with caplog.at_level(logging.DEBUG, logger="django_admin_applist_order.reorder"):
+        response = admin_client.get("/admin/")
+
+    assert response.status_code == 200
+    actual_auth_model_order = model_names(response.context["app_list"], "auth")
+    assert actual_auth_model_order == ["User", "Group"]
+    assert any(
+        "ghostmodel" in record.message.lower() and "auth" in record.message.lower()
+        for record in caplog.records
+    )
+
+
 def test_default_order_differs_without_setting(admin_client, settings):
     """Sanity check: with the setting empty, order is Django's default,
     proving our other assertions are caused by the middleware."""

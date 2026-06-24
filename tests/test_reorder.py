@@ -1,6 +1,5 @@
 import pytest
 
-from django_admin_applist_order.exceptions import MalformedDisplayOrderException
 from django_admin_applist_order.reorder import reorder_app_list
 
 
@@ -96,13 +95,26 @@ def test_model_name_matching_is_case_insensitive():
     )
 
 
-def test_unknown_model_in_order_raises():
+def test_unknown_model_in_order_is_skipped_not_an_error():
     app = make_app("blog", "Blog", "Post", "Author")
+    result = reorder_app_list([app], {"blog": ["Ghost", "Post"]})
+    assert model_object_names(result[0]) == ["Post", "Author"]
 
-    with pytest.raises(MalformedDisplayOrderException) as exc_info:
+
+def test_unknown_model_in_order_logs_at_debug(caplog):
+    import logging
+
+    app = make_app("blog", "Blog", "Post", "Author")
+    with caplog.at_level(logging.DEBUG, logger="django_admin_applist_order.reorder"):
         reorder_app_list([app], {"blog": ["Ghost", "Post"]})
+    assert any("ghost" in record.message.lower() for record in caplog.records)
+    assert any("blog" in record.message.lower() for record in caplog.records)
 
-    assert "blog" in str(exc_info.value)
-    assert "ghost" in str(exc_info.value).lower()
-    assert "Post" in str(exc_info.value)
-    assert "Author" in str(exc_info.value)
+
+def test_unknown_app_in_order_logs_at_debug(caplog):
+    import logging
+
+    app_list = [make_app("auth", "Auth", "User")]
+    with caplog.at_level(logging.DEBUG, logger="django_admin_applist_order.reorder"):
+        reorder_app_list(app_list, {"ghost_app": [], "auth": []})
+    assert any("ghost_app" in record.message.lower() for record in caplog.records)
