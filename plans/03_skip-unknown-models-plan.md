@@ -27,7 +27,7 @@ debug log for the already-silent app-level skip so all skips are observable when
 
 ---
 
-## Step 1 — Write the failing (red) tests  [ STATUS: TODO ]
+## Step 1 — Write the failing (red) tests  [ STATUS: DONE ]
 
 Add new test cases to `tests/test_reorder.py` that describe the desired behavior.
 These tests will **fail** against the current code, confirming they are testing the right thing.
