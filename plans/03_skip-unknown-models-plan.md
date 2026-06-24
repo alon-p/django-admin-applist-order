@@ -130,7 +130,7 @@ test must be gone (it tested the removed behavior).
 
 ---
 
-## Step 4 — Verify nothing else broke  [ STATUS: TODO ]
+## Step 4 — Verify nothing else broke  [ STATUS: DONE ]
 
 ```bash
 poetry run python -m pytest -v
