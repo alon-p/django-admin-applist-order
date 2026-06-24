@@ -79,7 +79,7 @@ The test `test_unknown_model_in_order_raises` now documents the **old** behavior
 
 ---
 
-## Step 2 — Implement the change in `reorder.py`  [ STATUS: TODO ]
+## Step 2 — Implement the change in `reorder.py`  [ STATUS: DONE ]
 
 ### 2a — Add a logger (reorder.py has none today)
 
@@ -97,10 +97,7 @@ After the existing line that silently filters missing apps, add a debug log:
 listed_labels = [label for label in apps_order if label in app_dict]
 for label in apps_order:
     if label not in app_dict:
-        logger.debug(
-            "ADMIN_APPS_DISPLAY_ORDER: app %r not found in admin app list — skipping",
-            label,
-        )
+        logger.debug("app %r not found in admin app list — skipping", label)
 ```
 
 ### 2c — In `_order_models`: replace raise with debug log + skip
@@ -115,18 +112,14 @@ listed.append(model)
 
 # After:
 if model is None:
-    logger.debug(
-        "ADMIN_APPS_DISPLAY_ORDER[%r]: model %r not found in app — skipping",
-        app["app_label"],
-        name,
-    )
+    logger.debug("app %r: model %r not found — skipping", app["app_label"], name)
     continue
 listed.append(model)
 ```
 
 ---
 
-## Step 3 — Run the tests (green)  [ STATUS: TODO ]
+## Step 3 — Run the tests (green)  [ STATUS: DONE ]
 
 ```bash
 poetry run python -m pytest tests/test_reorder.py -v
