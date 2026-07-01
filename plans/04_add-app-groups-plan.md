@@ -585,17 +585,10 @@ setting.
 
 ---
 
-## Step 7 — Version bump  [ STATUS: TODO ]
+## Step 7 — Version bump  [ STATUS: DONE ]
 
 `pyproject.toml`: `version = "0.7.0"` → `version = "0.8.0"` (new backward-compatible feature).
 Update the `description` if desired to mention grouping.
-
----
-
-## Step 8 — Release  [ STATUS: TODO ]
-
-After merge, publish 0.8.0 to PyPI. Downstream projects can then bump the dependency, add an
-`ADMIN_APP_GROUPS` setting, and optionally position the group via `ADMIN_APPS_DISPLAY_ORDER`.
 
 ---
 
