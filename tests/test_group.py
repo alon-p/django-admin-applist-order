@@ -89,7 +89,7 @@ def test_name_defaults_to_titleized_key():
     assert app_by_label(result, "content")["name"] == "Content"
 
 
-def test_group_takes_the_slot_of_its_first_source_app():
+def test_group_is_appended_after_remaining_real_apps():
     app_list = [
         make_app("auth", "Auth", "User"),
         make_app("blog", "Blog", "Post"),
@@ -97,8 +97,10 @@ def test_group_takes_the_slot_of_its_first_source_app():
         make_app("sessions", "Sessions", "Session"),
     ]
     result = group_app_list(app_list, GROUP)
-    # "content" replaces the blog slot; news is consumed & dropped.
-    assert app_labels(result) == ["auth", "content", "sessions"]
+    # blog and news are fully consumed and dropped; "content" is appended after
+    # whatever real apps remain. Positioning relative to "auth"/"sessions" is no
+    # longer group_app_list's concern — that's reorder_app_list's job now.
+    assert app_labels(result) == ["auth", "sessions", "content"]
 
 
 def test_group_url_points_at_first_collected_model():
