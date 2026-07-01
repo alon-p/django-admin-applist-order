@@ -10,6 +10,42 @@ It works through a middleware that post-processes the admin's response, so you
 **don't** need to swap your `AdminSite` or change any admin registration. Add
 one line to `MIDDLEWARE`, define the setting, done.
 
+## Quickstart
+
+```python
+MIDDLEWARE = [
+    # ...
+    "django_admin_applist_order.middleware.AppListOrderMiddleware",
+]
+
+ADMIN_APP_LIST = {
+    # Orders apps and the models within them. Keyed by app label.
+    "order": {
+        "blog": ["Post", "Author"],   # listed apps come first, in this order;
+        "auth": [],                   # unlisted apps follow, alphabetically.
+        "content": ["Post", "Article"],  # also positions the "content" group below —
+                                          # a group's label works exactly like a real app's.
+        # An empty list ([]) means "show all of this app's models, alphabetically".
+        # A model not listed for an app still shows up, after the listed ones, alphabetically.
+    },
+    # Merges models from several apps into one synthetic sidebar heading.
+    "custom_groups": {
+        "content": {                          # synthetic app label — used as the key in "order" too
+            "display_label": "Content",       # sidebar title (optional; defaults to "Content", from the key)
+            "apps": {                          # source app label -> models to pull in
+                "blog": ["Post"],
+                "news": ["Article"],           # [] here would mean "take all of news's models"
+            },
+        },
+        # A group left out of "order" defaults to alphabetical position, same as any app.
+    },
+}
+```
+
+Both top-level keys (`"order"`, `"custom_groups"`) are optional and independently
+emptyable — set only the one you need, or neither (the package is a no-op with no
+`ADMIN_APP_LIST` at all). The sections below cover each in detail.
+
 ## Install
 
 ```bash
@@ -29,29 +65,13 @@ MIDDLEWARE = [
 
 ## Usage
 
-Define `ADMIN_APP_LIST` in `settings.py`. It has two independently optional keys:
+Define `ADMIN_APP_LIST` in `settings.py` (see the Quickstart above for a full example).
+It has two independently optional keys:
 
 - `"order"` — orders apps and the models within them. Keys are app labels (the
   app's folder name, e.g. `core`, `auth`).
 - `"custom_groups"` — merges models from several apps into a synthetic sidebar
   heading.
-
-```python
-ADMIN_APP_LIST = {
-    "order": {
-        "APP_NAME": ["MODEL1", "MODEL2", "MODEL3"],
-    },
-    "custom_groups": {
-        "content": {                       # synthetic app label
-            "display_label": "Content",    # sidebar title (optional; defaults to the key, title-cased)
-            "apps": {                       # source app label -> models to pull in ([] = all models)
-                "blog": ["Post"],
-                "news": ["Article"],
-            },
-        },
-    },
-}
-```
 
 If the setting is missing entirely, or `{}`, the package does nothing. Either
 inner key can be omitted or left empty independently — the other still runs.
@@ -83,9 +103,10 @@ Behaviour:
 
 - Grouped models are **moved out** of their source apps. A source app left with no models
   disappears; one with leftover models stays.
-- The group takes the slot of its first source app. Because its `app_label` is the key
-  (`"content"`), you can position it and order its models with `ADMIN_APP_LIST["order"]`
-  just like a real app:
+- A group's `app_label` is its key (`"content"`), so `ADMIN_APP_LIST["order"]` treats it
+  exactly like a real app: mention it there to position it and/or order its models; leave
+  it out and it falls back to the same default an unmentioned real app gets — alphabetical,
+  at the end.
 
   ```python
   ADMIN_APP_LIST = {
