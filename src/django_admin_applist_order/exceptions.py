@@ -37,3 +37,46 @@ class MalformedDisplayOrderException(Exception):
             f"Available models in {app_label!r}: {available}.\n"
             f"Example:\n{_EXAMPLE}"
         )
+
+
+_GROUP_EXAMPLE = (
+    "    ADMIN_APP_GROUPS = {\n"
+    '        "content": {\n'
+    '            "name": "Content",\n'
+    '            "apps": {"blog": ["Post"], "news": ["Article"]},\n'
+    "        }\n"
+    "    }"
+)
+
+
+class MalformedAppGroupsException(Exception):
+    """Raised when ADMIN_APP_GROUPS is not structured correctly.
+
+    The setting must be a dict mapping a synthetic app label (str) to a group
+    definition: a dict with an ``"apps"`` mapping of ``{app_label: [model, ...]}``
+    and an optional ``"name"`` display title.
+    """
+
+    @classmethod
+    def for_setting(cls, value):
+        return cls(
+            f"ADMIN_APP_GROUPS must be a dict mapping group labels to group "
+            f"definitions, got {type(value).__name__}: {value!r}.\n"
+            f"Example:\n{_GROUP_EXAMPLE}"
+        )
+
+    @classmethod
+    def for_group(cls, group_label, value):
+        return cls(
+            f"ADMIN_APP_GROUPS[{group_label!r}] must be a dict with an 'apps' mapping, "
+            f"got {type(value).__name__}: {value!r}.\n"
+            f"Example:\n{_GROUP_EXAMPLE}"
+        )
+
+    @classmethod
+    def for_app(cls, group_label, app_label, value):
+        return cls(
+            f"ADMIN_APP_GROUPS[{group_label!r}]['apps'][{app_label!r}] must be a list of "
+            f"model names, got {type(value).__name__}: {value!r}.\n"
+            f"Example:\n{_GROUP_EXAMPLE}"
+        )
