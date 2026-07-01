@@ -33,7 +33,7 @@ def model_object_names(app):
 
 GROUP = {
     "content": {
-        "name": "Content",
+        "display_label": "Content",
         "apps": {"blog": ["Post"], "news": ["Article"]},
     },
 }

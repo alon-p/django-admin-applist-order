@@ -14,15 +14,17 @@ def models_of(app_list, label):
 
 ACCOUNTS_GROUP = {
     "accounts": {
-        "name": "Accounts",
+        "display_label": "Accounts",
         "apps": {"auth": ["User", "Group"], "sessions": ["Session"]},
     }
 }
 
 
 def test_index_app_list_has_synthetic_group(admin_client, settings):
-    settings.ADMIN_APP_GROUPS = ACCOUNTS_GROUP
-    settings.ADMIN_APPS_DISPLAY_ORDER = {}  # isolate grouping from the module's default order
+    settings.ADMIN_APP_LIST = {
+        "custom_groups": ACCOUNTS_GROUP,
+        "order": {},  # isolate grouping from the module's default order
+    }
     response = admin_client.get("/admin/")
     labels = app_labels(response.context["app_list"])
     assert "accounts" in labels
@@ -31,19 +33,23 @@ def test_index_app_list_has_synthetic_group(admin_client, settings):
 
 
 def test_sidebar_available_apps_has_synthetic_group(admin_client, settings):
-    settings.ADMIN_APP_GROUPS = ACCOUNTS_GROUP
-    settings.ADMIN_APPS_DISPLAY_ORDER = {}  # isolate grouping from the module's default order
+    settings.ADMIN_APP_LIST = {
+        "custom_groups": ACCOUNTS_GROUP,
+        "order": {},  # isolate grouping from the module's default order
+    }
     response = admin_client.get("/admin/")
     assert "accounts" in app_labels(response.context["available_apps"])
 
 
 def test_grouping_composes_with_ordering(admin_client, settings):
     """The synthetic label can be positioned and its models ordered via
-    ADMIN_APPS_DISPLAY_ORDER."""
-    settings.ADMIN_APP_GROUPS = ACCOUNTS_GROUP
-    settings.ADMIN_APPS_DISPLAY_ORDER = {
-        "accounts": ["Session", "User", "Group"],  # reorder within the group
-        "contenttypes": [],
+    ADMIN_APP_LIST["order"]."""
+    settings.ADMIN_APP_LIST = {
+        "custom_groups": ACCOUNTS_GROUP,
+        "order": {
+            "accounts": ["Session", "User", "Group"],  # reorder within the group
+            "contenttypes": [],
+        },
     }
     response = admin_client.get("/admin/")
     labels = app_labels(response.context["app_list"])
@@ -52,6 +58,6 @@ def test_grouping_composes_with_ordering(admin_client, settings):
 
 
 def test_no_group_setting_is_a_noop(admin_client, settings):
-    settings.ADMIN_APP_GROUPS = {}
+    settings.ADMIN_APP_LIST = {"custom_groups": {}}
     response = admin_client.get("/admin/")
     assert "accounts" not in app_labels(response.context["app_list"])
