@@ -54,7 +54,7 @@ ADMIN_APP_GROUPS = {
 
 ---
 
-## Step 1 — Write the failing (red) unit tests  [ STATUS: TODO ]
+## Step 1 — Write the failing (red) unit tests  [ STATUS: DONE ]
 
 Create `tests/test_group.py`. Reuse the same tiny dict-builder style as `test_reorder.py`.
 Note the group model dicts need an `admin_url` (real Django model dicts have one), so the helper
@@ -217,7 +217,7 @@ These fail because `group.py` / the exception do not exist yet.
 
 ---
 
-## Step 2 — Add `MalformedAppGroupsException`  [ STATUS: TODO ]
+## Step 2 — Add `MalformedAppGroupsException`  [ STATUS: DONE ]
 
 In `src/django_admin_applist_order/exceptions.py`, add a parallel exception. Keep the same
 classmethod-constructor style as `MalformedDisplayOrderException`.
@@ -268,7 +268,7 @@ class MalformedAppGroupsException(Exception):
 
 ---
 
-## Step 3 — Implement `group.py`  [ STATUS: TODO ]
+## Step 3 — Implement `group.py`  [ STATUS: DONE ]
 
 Create `src/django_admin_applist_order/group.py`. Pure functions on the list-of-dicts, mirroring
 `reorder.py`'s framing.
@@ -407,7 +407,7 @@ Run: `poetry run python -m pytest tests/test_group.py -v` → all green.
 
 ---
 
-## Step 4 — Wire grouping into the middleware  [ STATUS: TODO ]
+## Step 4 — Wire grouping into the middleware  [ STATUS: DONE ]
 
 Grouping must run even when `ADMIN_APPS_DISPLAY_ORDER` is unset, and must run **before** reorder
 so the synthetic label can be positioned. Update `middleware.py`:
@@ -472,7 +472,7 @@ class AppListOrderMiddleware:
 
 ---
 
-## Step 5 — Integration tests  [ STATUS: TODO ]
+## Step 5 — Integration tests  [ STATUS: DONE ]
 
 Create `tests/test_group_integration.py`. The test settings only install
 `admin/auth/contenttypes/sessions/messages`, so group real built-in models to prove the
@@ -540,7 +540,7 @@ Run the full suite: `poetry run python -m pytest -v` → all green.
 
 ---
 
-## Step 6 — Document in README  [ STATUS: TODO ]
+## Step 6 — Document in README  [ STATUS: DONE ]
 
 Add a section after the `ADMIN_APPS_DISPLAY_ORDER` usage:
 
@@ -610,5 +610,8 @@ After merge, publish 0.8.0 to PyPI. Downstream projects can then bump the depend
   and avoids having to override admin templates to render a link-less title.
 - `MalformedAppGroupsException` only fires for wrong *types* (a genuine misconfiguration), never
   for missing apps/models (a permission situation).
+- **Follow-up planned:** [[05_consolidate-app-list-setting-plan]] merges `ADMIN_APP_GROUPS` and
+  `ADMIN_APPS_DISPLAY_ORDER` into one `ADMIN_APP_LIST` setting, as a breaking change shipped
+  *after* this plan's 0.8.0 release — not folded into it.
 - After each step is done, change its `[ STATUS: TODO ]` to `[ STATUS: DONE ]`.
 ```
