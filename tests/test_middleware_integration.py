@@ -15,10 +15,12 @@ def model_names(app_list, app_label):
 
 
 def test_index_app_list_is_reordered(admin_client, settings):
-    """The admin index `app_list` follows ADMIN_APPS_DISPLAY_ORDER."""
-    settings.ADMIN_APPS_DISPLAY_ORDER = {
-        "sessions": [],
-        "auth": ["User", "Group"],
+    """The admin index `app_list` follows ADMIN_APP_LIST["order"]."""
+    settings.ADMIN_APP_LIST = {
+        "order": {
+            "sessions": [],
+            "auth": ["User", "Group"],
+        },
     }
     response = admin_client.get("/admin/")
 
@@ -30,9 +32,11 @@ def test_index_app_list_is_reordered(admin_client, settings):
 
 def test_within_app_model_order_is_applied(admin_client, settings):
     """Models inside `auth` follow the per-app order (User before Group)."""
-    settings.ADMIN_APPS_DISPLAY_ORDER = {
-        "sessions": [],
-        "auth": ["User", "Group"],
+    settings.ADMIN_APP_LIST = {
+        "order": {
+            "sessions": [],
+            "auth": ["User", "Group"],
+        },
     }
     response = admin_client.get("/admin/")
 
@@ -43,9 +47,11 @@ def test_within_app_model_order_is_applied(admin_client, settings):
 
 def test_sidebar_available_apps_is_reordered(admin_client, settings):
     """The nav sidebar uses `available_apps`; it must be reordered too."""
-    settings.ADMIN_APPS_DISPLAY_ORDER = {
-        "sessions": [],
-        "auth": ["User", "Group"],
+    settings.ADMIN_APP_LIST = {
+        "order": {
+            "sessions": [],
+            "auth": ["User", "Group"],
+        },
     }
     response = admin_client.get("/admin/")
 
@@ -56,9 +62,11 @@ def test_sidebar_available_apps_is_reordered(admin_client, settings):
 
 def test_model_changelist_sidebar_app_order(admin_client, settings):
     """On a model changelist page the sidebar (`available_apps`) is still reordered."""
-    settings.ADMIN_APPS_DISPLAY_ORDER = {
-        "sessions": [],
-        "auth": ["User", "Group"],
+    settings.ADMIN_APP_LIST = {
+        "order": {
+            "sessions": [],
+            "auth": ["User", "Group"],
+        },
     }
     # `app_list` does not exist on sub-pages — only `available_apps` (the sidebar).
     response = admin_client.get("/admin/auth/user/")
@@ -70,9 +78,11 @@ def test_model_changelist_sidebar_app_order(admin_client, settings):
 
 def test_model_changelist_sidebar_model_order(admin_client, settings):
     """On a model changelist page the per-app model order in the sidebar is preserved."""
-    settings.ADMIN_APPS_DISPLAY_ORDER = {
-        "sessions": [],
-        "auth": ["User", "Group"],
+    settings.ADMIN_APP_LIST = {
+        "order": {
+            "sessions": [],
+            "auth": ["User", "Group"],
+        },
     }
     response = admin_client.get("/admin/auth/user/")
 
@@ -82,8 +92,8 @@ def test_model_changelist_sidebar_model_order(admin_client, settings):
 
 
 def test_malformed_setting_is_list_not_dict(admin_client, settings):
-    """ADMIN_APPS_DISPLAY_ORDER must be a dict; a list raises MalformedDisplayOrderException."""
-    settings.ADMIN_APPS_DISPLAY_ORDER = ["sessions", "auth"]  # list, not a dict
+    """ADMIN_APP_LIST["order"] must be a dict; a list raises MalformedDisplayOrderException."""
+    settings.ADMIN_APP_LIST = {"order": ["sessions", "auth"]}  # list, not a dict
 
     malformed_value = ["sessions", "auth"]
     with pytest.raises(MalformedDisplayOrderException) as exc_info:
@@ -94,9 +104,11 @@ def test_malformed_setting_is_list_not_dict(admin_client, settings):
 
 def test_malformed_setting_model_list_is_none(admin_client, settings):
     """A None model list raises MalformedDisplayOrderException naming the offending app."""
-    settings.ADMIN_APPS_DISPLAY_ORDER = {
-        "sessions": [],
-        "auth": None,  # None instead of a list
+    settings.ADMIN_APP_LIST = {
+        "order": {
+            "sessions": [],
+            "auth": None,  # None instead of a list
+        },
     }
 
     with pytest.raises(MalformedDisplayOrderException) as exc_info:
@@ -107,9 +119,11 @@ def test_malformed_setting_model_list_is_none(admin_client, settings):
 
 def test_malformed_setting_model_list_is_string(admin_client, settings):
     """A string model list raises MalformedDisplayOrderException naming the offending app."""
-    settings.ADMIN_APPS_DISPLAY_ORDER = {
-        "sessions": [],
-        "auth": "User",  # string instead of a list
+    settings.ADMIN_APP_LIST = {
+        "order": {
+            "sessions": [],
+            "auth": "User",  # string instead of a list
+        },
     }
 
     with pytest.raises(MalformedDisplayOrderException) as exc_info:
@@ -123,8 +137,10 @@ def test_unknown_model_in_setting_is_skipped_and_logs(admin_client, settings, ca
     the response succeeds, and a DEBUG log names the missing model and app."""
     import logging
 
-    settings.ADMIN_APPS_DISPLAY_ORDER = {
-        "auth": ["GhostModel", "User", "Group"],
+    settings.ADMIN_APP_LIST = {
+        "order": {
+            "auth": ["GhostModel", "User", "Group"],
+        },
     }
     with caplog.at_level(logging.DEBUG, logger="django_admin_applist_order.reorder"):
         response = admin_client.get("/admin/")
@@ -141,7 +157,7 @@ def test_unknown_model_in_setting_is_skipped_and_logs(admin_client, settings, ca
 def test_default_order_differs_without_setting(admin_client, settings):
     """Sanity check: with the setting empty, order is Django's default,
     proving our other assertions are caused by the middleware."""
-    settings.ADMIN_APPS_DISPLAY_ORDER = {}
+    settings.ADMIN_APP_LIST = {}
     response = admin_client.get("/admin/")
 
     # Django sorts by verbose_name_plural: "groups" < "users", so Group comes first.

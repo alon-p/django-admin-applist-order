@@ -34,7 +34,9 @@ TEMPLATES = [
 # Deliberately NOT Django's default order, so a passing test can only mean
 # the middleware reordered things. Django's default for auth is Group, User
 # (alphabetical by verbose_name_plural); we set User before Group to reverse it.
-ADMIN_APPS_DISPLAY_ORDER = {
-    "sessions": [],        # listed first; models alpha-sorted
-    "auth": ["User", "Group"],  # reverse of Django's default (Group, User)
+ADMIN_APP_LIST = {
+    "order": {
+        "sessions": [],        # listed first; models alpha-sorted
+        "auth": ["User", "Group"],  # reverse of Django's default (Group, User)
+    },
 }
