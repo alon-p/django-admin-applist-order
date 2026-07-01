@@ -12,12 +12,16 @@ from .exceptions import MalformedDisplayOrderException
 logger = logging.getLogger(__name__)
 
 
-def reorder_app_list(app_list, apps_order):
+def reorder_app_list(app_list, apps_order, setting_name="ADMIN_APPS_DISPLAY_ORDER"):
     """Return a new app list ordered according to ``apps_order``.
 
     ``apps_order`` is the ADMIN_APPS_DISPLAY_ORDER mapping::
 
         {app_label: [ModelName, ...]}
+
+    ``setting_name`` is only used to name the offending setting in raised
+    exceptions — pass it when ``apps_order`` came from somewhere other than a
+    literal ``ADMIN_APPS_DISPLAY_ORDER`` (e.g. ``ADMIN_APP_LIST["order"]``).
 
     Rules:
       * Apps listed in the mapping come first, in mapping order.
@@ -26,6 +30,9 @@ def reorder_app_list(app_list, apps_order):
         followed by any unlisted models sorted alphabetically.
       * An empty list for an app means "all models, sorted alphabetically".
     """
+    if not isinstance(apps_order, dict):
+        raise MalformedDisplayOrderException.for_setting(apps_order, setting_name=setting_name)
+
     app_dict = {app["app_label"]: app for app in app_list}
 
     listed_labels = [label for label in apps_order if label in app_dict]
@@ -43,7 +50,9 @@ def reorder_app_list(app_list, apps_order):
     for app in ordered:
         model_order = apps_order.get(app["app_label"], [])
         if not isinstance(model_order, list):
-            raise MalformedDisplayOrderException.for_app(app["app_label"], model_order)
+            raise MalformedDisplayOrderException.for_app(
+                app["app_label"], model_order, setting_name=setting_name
+            )
         _order_models(app, model_order)
 
     return ordered
