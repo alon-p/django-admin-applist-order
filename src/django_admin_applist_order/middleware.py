@@ -78,7 +78,7 @@ class AppListOrderMiddleware:
                 continue
             if app_groups:
                 value = group_app_list(value, app_groups, setting_name=groups_setting_name)
-            if apps_order:
+            if app_groups or apps_order:
                 value = reorder_app_list(value, apps_order, setting_name=order_setting_name)
             context[key] = value
 

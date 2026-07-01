@@ -26,13 +26,15 @@ def group_app_list(app_list, app_groups, setting_name="ADMIN_APP_GROUPS"):
 
     Rules:
       * Each ``group_label`` becomes a synthetic app whose ``app_label`` is that
-        label, so it can be positioned / model-ordered via
-        ADMIN_APPS_DISPLAY_ORDER exactly like a real app.
+        label, so it can be positioned / model-ordered via ``ADMIN_APP_LIST["order"]``
+        exactly like a real app — including its *default* position when unmentioned:
+        alphabetical, at the end, same as any other unlisted app. This function
+        doesn't pick a position; it only builds the group and appends it after the
+        remaining real apps. Final placement is ``reorder_app_list``'s job.
       * Listed models are moved out of their source app into the group. An empty
         list pulls all of the source app's models.
       * A source app left with no models is dropped; one with leftovers stays.
-      * The group takes the slot of its first present source app. A group that
-        collects no models (all sources absent) is not emitted.
+      * A group that collects no models (all sources absent) is not emitted.
       * Unknown source apps / models are skipped and logged at DEBUG, mirroring
         ``reorder_app_list``. Wrong value *types* raise MalformedAppGroupsException.
     """
@@ -40,15 +42,13 @@ def group_app_list(app_list, app_groups, setting_name="ADMIN_APP_GROUPS"):
         raise MalformedAppGroupsException.for_setting(app_groups, setting_name=setting_name)
 
     app_by_label = {app["app_label"]: app for app in app_list}
-    collected_by_group = {}   # group_label -> [model dicts]
-    anchor_by_group = {}      # group_label -> app_label its slot should replace
+    collected_by_group = {}   # group_label -> [model dicts], in custom_groups order
 
     for group_label, definition in app_groups.items():
         if not isinstance(definition, dict) or not isinstance(definition.get("apps"), dict):
             raise MalformedAppGroupsException.for_group(group_label, definition, setting_name=setting_name)
 
         collected = []
-        anchor = None
         for source_label, model_names in definition["apps"].items():
             if not isinstance(model_names, list):
                 raise MalformedAppGroupsException.for_app(
@@ -60,34 +60,19 @@ def group_app_list(app_list, app_groups, setting_name="ADMIN_APP_GROUPS"):
                     "group %r: source app %r not found — skipping", group_label, source_label
                 )
                 continue
-            if anchor is None:
-                anchor = source_label
             collected.extend(_take_models(source, model_names, group_label))
 
         collected_by_group[group_label] = collected
-        anchor_by_group[group_label] = anchor
 
-    # Rebuild: insert each non-empty group at its anchor app's slot; drop apps
-    # that were fully consumed.
-    result = []
-    inserted = set()
-    for app in app_list:
-        for group_label, anchor in anchor_by_group.items():
-            if (
-                anchor == app["app_label"]
-                and group_label not in inserted
-                and collected_by_group[group_label]
-            ):
-                result.append(
-                    _make_group(
-                        group_label,
-                        app_groups[group_label].get("display_label"),
-                        collected_by_group[group_label],
-                    )
-                )
-                inserted.add(group_label)
-        if app["models"]:
-            result.append(app)
+    # Real apps keep their relative order; fully-consumed ones are dropped.
+    # Non-empty groups are appended after, in custom_groups definition order.
+    # Where everything ends up is reorder_app_list's job, not this function's.
+    result = [app for app in app_list if app["models"]]
+    for group_label, collected in collected_by_group.items():
+        if collected:
+            result.append(
+                _make_group(group_label, app_groups[group_label].get("display_label"), collected)
+            )
 
     return result
 
